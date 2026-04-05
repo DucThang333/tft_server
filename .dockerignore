@@ -1,0 +1,8 @@
+/_build
+/deps
+.elixir_ls
+.git
+.gitignore
+*.md
+erl_crash.dump
+/tmp

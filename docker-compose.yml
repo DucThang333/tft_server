@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tft
+    ports:
+      - "5432:5432"
+    volumes:
+      - tft_server_pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      MIX_ENV: dev
+      DATABASE_HOST: db
+    ports:
+      - "4000:4000"
+    volumes:
+      - .:/app
+      - tft_app_deps:/app/deps
+      - tft_app_build:/app/_build
+    depends_on:
+      db:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+    develop:
+      watch:
+        - action: rebuild
+          path: mix.exs
+        - action: rebuild
+          path: Dockerfile
+        - action: rebuild
+          path: docker/entrypoint-dev.sh
+
+volumes:
+  tft_server_pgdata:
+  tft_app_deps:
+  tft_app_build:

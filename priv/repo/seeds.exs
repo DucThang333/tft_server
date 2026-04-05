@@ -1,0 +1,1 @@
+TftServer.Seeds.run()
