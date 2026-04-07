@@ -12,6 +12,7 @@ defmodule TftServer.Champions.Champion do
     field :skill_name, :string
     field :skill_description_template, :string
     field :image_url, :string
+    field :version_id, :string, default: "default"
     # Trạng thái lõi: các augment gắn với tướng + ghi chú (JSON: %{"linked" => [...], "notes" => ...})
     field :augment_state, :map, default: %{"linked" => [], "notes" => nil}
     # Kỳ ngộ / portal liên quan (mảng object lưu trong JSONB)
@@ -32,6 +33,7 @@ defmodule TftServer.Champions.Champion do
     :skill_name,
     :skill_description_template,
     :image_url,
+    :version_id,
     :augment_state,
     :encounters
   ]
@@ -51,7 +53,8 @@ defmodule TftServer.Champions.Champion do
       :role_type,
       :skill_name,
       :skill_description_template,
-      :image_url
+      :image_url,
+      :version_id
     ])
     |> validate_number(:cost, greater_than_or_equal_to: 1, less_than_or_equal_to: 5)
     |> validate_number(:content_version, greater_than_or_equal_to: 1)
@@ -78,9 +81,18 @@ defmodule TftServer.Champions.Champion do
 
   defp validate_if_changed_min_len(changeset, field, min_len) do
     case get_change(changeset, field) do
-      nil -> changeset
-      v when is_binary(v) and byte_size(String.trim(v)) >= min_len -> changeset
-      _ -> add_error(changeset, field, "không hợp lệ")
+      nil ->
+        changeset
+
+      v when is_binary(v) ->
+        if byte_size(String.trim(v)) >= min_len do
+          changeset
+        else
+          add_error(changeset, field, "không hợp lệ")
+        end
+
+      _ ->
+        add_error(changeset, field, "không hợp lệ")
     end
   end
 

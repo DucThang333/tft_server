@@ -23,6 +23,8 @@ services:
     environment:
       MIX_ENV: dev
       DATABASE_HOST: db
+      # Set in `.env` to use Neon instead of local `db` (see .env.example).
+      DATABASE_URL: ${DATABASE_URL:-}
     ports:
       - "4000:4000"
     volumes:

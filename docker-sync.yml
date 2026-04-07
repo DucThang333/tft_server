@@ -1,0 +1,15 @@
+version: "2"
+
+options:
+  verbose: false
+
+syncs:
+  tft_server_app_sync:
+    src: "."
+    sync_strategy: native_osx
+    sync_excludes:
+      - ".git"
+      - "deps"
+      - "_build"
+      - "tmp"
+      - ".elixir_ls"

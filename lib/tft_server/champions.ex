@@ -24,6 +24,55 @@ defmodule TftServer.Champions do
     |> Repo.all()
   end
 
+  @doc """
+  Tất cả định nghĩa tộc/hệ (bách khoa / meta traits), sắp xếp theo tên.
+  """
+  def list_trait_defs do
+    Trait
+    |> order_by([t], asc: t.name)
+    |> Repo.all()
+  end
+
+  def get_trait_def(id) when is_binary(id), do: Repo.get(Trait, id)
+
+  def create_trait_def(attrs) when is_map(attrs) do
+    attrs = stringify_keys(attrs)
+    name = attrs["name"] |> to_string() |> String.trim()
+
+    trait_attrs = %{
+      "id" => normalize_trait_id(attrs["id"], name),
+      "name" => name,
+      "kind" => normalize_trait_kind(attrs["kind"]),
+      "description" => attrs["description"] || "",
+      "icon_url" => attrs["icon_url"] || attrs["iconUrl"] || "",
+      "version_id" => normalize_version_id(attrs["version_id"] || attrs["versionId"])
+    }
+
+    %Trait{}
+    |> Trait.changeset(trait_attrs)
+    |> Repo.insert()
+  end
+
+  def update_trait_def(%Trait{} = trait, attrs) when is_map(attrs) do
+    attrs = stringify_keys(attrs)
+
+    update_attrs =
+      %{}
+      |> put_if_present(attrs, "name", fn v -> String.trim(to_string(v)) end)
+      |> put_if_present(attrs, "kind", &normalize_trait_kind/1)
+      |> put_if_present(attrs, "description", &to_string/1)
+      |> put_if_present(attrs, "icon_url", &to_string/1)
+      |> put_if_present(attrs, "iconUrl", &to_string/1, "icon_url")
+      |> put_if_present(attrs, "version_id", &normalize_version_id/1)
+      |> put_if_present(attrs, "versionId", &normalize_version_id/1, "version_id")
+
+    trait
+    |> Trait.changeset(update_attrs)
+    |> Repo.update()
+  end
+
+  def delete_trait_def(%Trait{} = trait), do: Repo.delete(trait)
+
   def get_champion(id) when is_binary(id) do
     Champion
     |> where([c], c.id == ^id)
@@ -62,7 +111,10 @@ defmodule TftServer.Champions do
         {:error, invalid_star_stats_changeset()}
 
       true ->
-        base = Map.put_new(base, "content_version", 1)
+        base =
+          base
+          |> Map.put_new("content_version", 1)
+          |> Map.put_new("version_id", "default")
 
         Multi.new()
         |> Multi.insert(:champion, Champion.create_changeset(%Champion{}, base))
@@ -149,14 +201,12 @@ defmodule TftServer.Champions do
   defp insert_champion_traits(repo, champion_id, trait_names) do
     Enum.with_index(trait_names, 0)
     |> Enum.reduce_while({:ok, :ok}, fn {name, idx}, {:ok, _} ->
-      id = trait_id_from_name(name)
-
-      with {:ok, _} <- ensure_trait(repo, id, name),
+      with {:ok, trait} <- find_trait(repo, name),
            {:ok, _} <-
              %ChampionTrait{}
              |> ChampionTrait.changeset(%{
                champion_id: champion_id,
-               trait_id: id,
+               trait_id: trait.id,
                sort_order: idx
              })
              |> repo.insert() do
@@ -177,16 +227,25 @@ defmodule TftServer.Champions do
     end
   end
 
-  defp ensure_trait(repo, id, name) do
+  defp find_trait(repo, name) when is_binary(name) do
+    id = trait_id_from_name(name)
+
     case repo.get(Trait, id) do
       %Trait{} = t ->
         {:ok, t}
 
       nil ->
-        %Trait{}
-        |> Trait.changeset(%{id: id, name: name})
-        |> repo.insert()
+        case repo.one(from(t in Trait, where: t.name == ^name, limit: 1)) do
+          %Trait{} = t -> {:ok, t}
+          nil -> {:error, invalid_missing_trait_changeset(name)}
+        end
     end
+  end
+
+  defp invalid_missing_trait_changeset(name) do
+    %Champion{}
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.add_error(:traits, "tộc hệ chưa tồn tại: #{name}")
   end
 
   defp trait_id_from_name(name) when is_binary(name) do
@@ -401,6 +460,33 @@ defmodule TftServer.Champions do
 
   defp blank_to_nil(v) when v in [nil, ""], do: nil
   defp blank_to_nil(v), do: v
+
+  defp put_if_present(acc, map, from_key, transform),
+    do: put_if_present(acc, map, from_key, transform, from_key)
+
+  defp put_if_present(acc, map, from_key, transform, to_key) do
+    if Map.has_key?(map, from_key) do
+      Map.put(acc, to_key, transform.(map[from_key]))
+    else
+      acc
+    end
+  end
+
+  defp normalize_trait_id(nil, name), do: trait_id_from_name(name)
+  defp normalize_trait_id("", name), do: trait_id_from_name(name)
+  defp normalize_trait_id(id, _name), do: id |> to_string() |> String.trim()
+
+  defp normalize_trait_kind(kind) when kind in ["class", :class], do: "class"
+  defp normalize_trait_kind(_), do: "origin"
+
+  defp normalize_version_id(nil), do: "default"
+  defp normalize_version_id(""), do: "default"
+  defp normalize_version_id(v) do
+    case v |> to_string() |> String.trim() do
+      "" -> "default"
+      id -> id
+    end
+  end
 
   defp stringify_keys(map) when is_map(map) do
     Map.new(map, fn

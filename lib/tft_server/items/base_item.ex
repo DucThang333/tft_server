@@ -11,11 +11,12 @@ defmodule TftServer.Items.BaseItem do
     field :image_url, :string
     field :utility, :integer
     field :offense, :integer
+    field :version_id, :string, default: "default"
 
     timestamps()
   end
 
-  @cast [:id, :name, :short_name, :stat, :image_url, :utility, :offense]
+  @cast [:id, :name, :short_name, :stat, :image_url, :utility, :offense, :version_id]
 
   def changeset(base_item \\ %__MODULE__{}, attrs) do
     base_item
@@ -27,7 +28,8 @@ defmodule TftServer.Items.BaseItem do
       :stat,
       :image_url,
       :utility,
-      :offense
+      :offense,
+      :version_id
     ])
   end
 end

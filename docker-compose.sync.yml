@@ -1,0 +1,12 @@
+# Use with docker-sync on macOS: replaces the slow bind mount so Phoenix code_reloader
+# sees file changes. Run: make sync-up (or: docker-sync start && docker compose -f ... up)
+services:
+  app:
+    volumes:
+      - tft_server_app_sync:/app
+      - tft_app_deps:/app/deps
+      - tft_app_build:/app/_build
+
+volumes:
+  tft_server_app_sync:
+    external: true

@@ -3,7 +3,7 @@ defmodule TftServer.Meta do
 
   import Ecto.Query
 
-  alias TftServer.Meta.{Composition, CompositionChampion, CompositionTrait, MetaOverview}
+  alias TftServer.Meta.{Composition, CompositionChampion, CompositionTrait, MetaOverview, Version}
   alias TftServer.Repo
 
   def list_compositions do
@@ -19,5 +19,10 @@ defmodule TftServer.Meta do
 
   def get_overview do
     Repo.get_by(MetaOverview, id: "default")
+  end
+
+  def list_versions do
+    from(v in Version, order_by: [desc: v.is_active, asc: v.id])
+    |> Repo.all()
   end
 end

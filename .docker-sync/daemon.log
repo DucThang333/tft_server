@@ -1,0 +1,16 @@
+objc[90011]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called.
+objc[90011]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called. We cannot safely call it or ignore it in the fork() child process. Crashing instead. Set a breakpoint on objc_initializeAfterForkError to debug.
+objc[3148]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called.
+objc[3148]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called. We cannot safely call it or ignore it in the fork() child process. Crashing instead. Set a breakpoint on objc_initializeAfterForkError to debug.
+objc[72202]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called.
+objc[72202]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called. We cannot safely call it or ignore it in the fork() child process. Crashing instead. Set a breakpoint on objc_initializeAfterForkError to debug.
+objc[84532]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called.
+objc[84532]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called. We cannot safely call it or ignore it in the fork() child process. Crashing instead. Set a breakpoint on objc_initializeAfterForkError to debug.
+objc[92746]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called.
+objc[92746]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called. We cannot safely call it or ignore it in the fork() child process. Crashing instead. Set a breakpoint on objc_initializeAfterForkError to debug.
+objc[94010]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called.
+objc[94010]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called. We cannot safely call it or ignore it in the fork() child process. Crashing instead. Set a breakpoint on objc_initializeAfterForkError to debug.
+objc[61153]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called.
+objc[61153]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called. We cannot safely call it or ignore it in the fork() child process. Crashing instead. Set a breakpoint on objc_initializeAfterForkError to debug.
+objc[51972]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called.
+objc[51972]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called. We cannot safely call it or ignore it in the fork() child process. Crashing instead. Set a breakpoint on objc_initializeAfterForkError to debug.

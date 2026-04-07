@@ -13,6 +13,7 @@ defmodule TftServerWeb.Api.V1.IntegrationTest do
     first = hd(champs)
     assert first["id"] == "aurelius"
     assert first["contentVersion"] == 1
+    assert first["versionId"] == "default"
     assert is_list(first["traits"])
     assert %{"id" => _, "name" => _} = hd(first["traits"])
     assert length(first["starStats"]) == 3
@@ -166,6 +167,61 @@ defmodule TftServerWeb.Api.V1.IntegrationTest do
     assert body["region"] == "NORTH AMERICA"
     assert body["updated"] == "2H AGO"
     assert body["patchLabel"] == "Live Patch Analysis"
+  end
+
+  test "GET /api/v1/meta/traits", %{conn: conn} do
+    conn = get(conn, "/api/v1/meta/traits")
+    assert %{"traits" => traits} = json_response(conn, 200)
+    assert length(traits) > 0
+    first = hd(traits)
+    assert %{
+             "id" => _,
+             "name" => _,
+             "kind" => k,
+             "description" => _,
+             "iconUrl" => _,
+             "versionId" => "default"
+           } = first
+    assert k in ["origin", "class"]
+  end
+
+  test "GET /api/v1/meta/versions", %{conn: conn} do
+    conn = get(conn, "/api/v1/meta/versions")
+    assert %{"versions" => versions} = json_response(conn, 200)
+    assert Enum.any?(versions, fn v -> v["value"] == "default" and is_binary(v["label"]) end)
+  end
+
+  test "POST/PUT/DELETE /api/v1/admin/meta/traits", %{conn: conn} do
+    create_payload = %{
+      "trait" => %{
+        "id" => "test-warden",
+        "name" => "Test Warden",
+        "kind" => "class",
+        "description" => "Trait dùng cho test",
+        "iconUrl" => "https://example.com/trait.png"
+      }
+    }
+
+    conn = post(conn, "/api/v1/admin/meta/traits", create_payload)
+    assert %{"trait" => created} = json_response(conn, 201)
+    assert created["id"] == "test-warden"
+    assert created["kind"] == "class"
+
+    update_payload = %{
+      "trait" => %{
+        "name" => "Test Warden Updated",
+        "description" => "Cập nhật mô tả"
+      }
+    }
+
+    conn = put(conn, "/api/v1/admin/meta/traits/test-warden", update_payload)
+    assert %{"trait" => updated} = json_response(conn, 200)
+    assert updated["name"] == "Test Warden Updated"
+    assert updated["description"] == "Cập nhật mô tả"
+    assert updated["kind"] == "class"
+
+    conn = delete(conn, "/api/v1/admin/meta/traits/test-warden")
+    assert response(conn, 204)
   end
 
   test "GET /api/v1/board/bootstrap", %{conn: conn} do

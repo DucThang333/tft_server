@@ -1,7 +1,7 @@
 defmodule TftServerWeb.Api.V1.MetaController do
   use TftServerWeb, :controller
 
-  alias TftServer.Meta
+  alias TftServer.{Champions, Meta}
   alias TftServerWeb.Api.V1.Json
 
   def compositions(conn, _params) do
@@ -14,5 +14,21 @@ defmodule TftServerWeb.Api.V1.MetaController do
 
   def overview(conn, _params) do
     json(conn, Json.overview(Meta.get_overview()))
+  end
+
+  def traits(conn, _params) do
+    traits =
+      Champions.list_trait_defs()
+      |> Enum.map(&Json.game_trait_def/1)
+
+    json(conn, %{"traits" => traits})
+  end
+
+  def versions(conn, _params) do
+    versions =
+      Meta.list_versions()
+      |> Enum.map(&Json.version/1)
+
+    json(conn, %{"versions" => versions})
   end
 end

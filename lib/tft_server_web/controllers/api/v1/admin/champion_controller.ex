@@ -79,6 +79,7 @@ defmodule TftServerWeb.Api.V1.Admin.ChampionController do
       "starStats" => body["starStats"] || body["star_stats"] || [],
       "skillParams" => body["skillParams"] || body["skill_params"] || [],
       "image_url" => body["imageUrl"] || body["image_url"],
+      "version_id" => body["versionId"] || body["version_id"] || "default",
       "augment_state" => normalize_augment_state(body["augmentState"] || body["augment_state"]),
       "encounters" => normalize_encounters_list(body["encounters"])
     }
@@ -112,6 +113,7 @@ defmodule TftServerWeb.Api.V1.Admin.ChampionController do
     |> put_if_star_stats(body)
     |> put_if_skill_params(body)
     |> put_if_image_url(body)
+    |> put_if_version_id(body)
     |> put_if_augment_state(body)
     |> put_if_encounters(body)
   end
@@ -169,6 +171,14 @@ defmodule TftServerWeb.Api.V1.Admin.ChampionController do
     cond do
       Map.has_key?(body, "imageUrl") -> Map.put(acc, "image_url", body["imageUrl"])
       Map.has_key?(body, "image_url") -> Map.put(acc, "image_url", body["image_url"])
+      true -> acc
+    end
+  end
+
+  defp put_if_version_id(acc, body) do
+    cond do
+      Map.has_key?(body, "versionId") -> Map.put(acc, "version_id", body["versionId"])
+      Map.has_key?(body, "version_id") -> Map.put(acc, "version_id", body["version_id"])
       true -> acc
     end
   end

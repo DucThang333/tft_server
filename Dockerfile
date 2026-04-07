@@ -1,7 +1,7 @@
 # Development image: use with docker compose (bind-mount source + named deps/_build volumes).
 FROM elixir:1.16-alpine
 
-RUN apk add --no-cache build-base git bash
+RUN apk add --no-cache build-base git bash ca-certificates
 
 WORKDIR /app
 

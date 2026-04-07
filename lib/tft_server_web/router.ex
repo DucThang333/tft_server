@@ -14,10 +14,15 @@ defmodule TftServerWeb.Router do
     get "/items/combined", ItemController, :combined
     get "/meta/compositions", MetaController, :compositions
     get "/meta/overview", MetaController, :overview
+    get "/meta/traits", MetaController, :traits
+    get "/meta/versions", MetaController, :versions
     get "/board/bootstrap", BoardController, :bootstrap
     get "/riot/platform-status", RiotController, :platform_status
 
     post "/admin/champions", Admin.ChampionController, :create
     put "/admin/champions/:id", Admin.ChampionController, :update
+    post "/admin/meta/traits", Admin.TraitController, :create
+    put "/admin/meta/traits/:id", Admin.TraitController, :update
+    delete "/admin/meta/traits/:id", Admin.TraitController, :delete
   end
 end

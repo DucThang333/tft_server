@@ -1,9 +1,9 @@
 defmodule TftServerWeb.Api.V1.Json do
   @moduledoc false
 
-  alias TftServer.Champions.Champion
+  alias TftServer.Champions.{Champion, Trait}
   alias TftServer.Items.{BaseItem, CombinedItem}
-  alias TftServer.Meta.{Composition, CompositionChampion, CompositionTrait, MetaOverview}
+  alias TftServer.Meta.{Composition, CompositionChampion, CompositionTrait, MetaOverview, Version}
 
   def champion(%Champion{} = c) do
     traits =
@@ -22,6 +22,7 @@ defmodule TftServerWeb.Api.V1.Json do
       "cost" => c.cost,
       "roleType" => c.role_type,
       "contentVersion" => c.content_version,
+      "versionId" => c.version_id,
       "traits" => traits,
       "skill" => %{
         "name" => c.skill_name,
@@ -84,6 +85,7 @@ defmodule TftServerWeb.Api.V1.Json do
       "shortName" => i.short_name,
       "stat" => i.stat,
       "imageUrl" => i.image_url,
+      "versionId" => i.version_id,
       "utility" => i.utility,
       "offense" => i.offense
     }
@@ -96,6 +98,7 @@ defmodule TftServerWeb.Api.V1.Json do
       "description" => i.description,
       "components" => i.components,
       "componentNames" => i.component_names,
+      "versionId" => i.version_id,
       "tags" => i.tags || [],
       "imageUrl" => i.image_url,
       "stats" => Enum.map(i.stats || [], &stat_line/1)
@@ -164,4 +167,26 @@ defmodule TftServerWeb.Api.V1.Json do
   defp maybe_put(map, _key, nil), do: map
   defp maybe_put(map, _key, ""), do: map
   defp maybe_put(map, key, value), do: Map.put(map, key, value)
+
+  def game_trait_def(%Trait{} = t) do
+    kind = if t.kind == "class", do: "class", else: "origin"
+
+    %{
+      "id" => t.id,
+      "name" => t.name,
+      "kind" => kind,
+      "description" => t.description || "",
+      "iconUrl" => t.icon_url || "",
+      "versionId" => t.version_id
+    }
+  end
+
+  def version(%Version{} = v) do
+    %{
+      "value" => v.id,
+      "label" => v.label,
+      "isActive" => v.is_active,
+      "notes" => v.notes || ""
+    }
+  end
 end

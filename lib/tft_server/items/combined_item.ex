@@ -13,6 +13,7 @@ defmodule TftServer.Items.CombinedItem do
     field :tags, {:array, :string}
     field :image_url, :string
     field :stats, {:array, :map}
+    field :version_id, :string, default: "default"
 
     timestamps()
   end
@@ -26,7 +27,8 @@ defmodule TftServer.Items.CombinedItem do
     :tier,
     :tags,
     :image_url,
-    :stats
+    :stats,
+    :version_id
   ]
 
   def changeset(combined_item \\ %__MODULE__{}, attrs) do
@@ -40,7 +42,8 @@ defmodule TftServer.Items.CombinedItem do
       :component_names,
       :tags,
       :image_url,
-      :stats
+      :stats,
+      :version_id
     ])
   end
 end

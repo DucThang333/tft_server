@@ -11,6 +11,15 @@ defmodule TftServerWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
-  plug CORSPlug, origin: "*", max_age: 86400
+  plug CORSPlug,
+    origin: "*",
+    max_age: 86400,
+    headers: [
+      "accept",
+      "authorization",
+      "content-type",
+      "origin",
+      "x-data-version"
+    ]
   plug TftServerWeb.Router
 end

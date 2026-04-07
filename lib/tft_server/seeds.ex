@@ -5,7 +5,7 @@ defmodule TftServer.Seeds do
   alias TftServer.Champions
   alias TftServer.Champions.{Champion, Trait}
   alias TftServer.Items.{BaseItem, CombinedItem}
-  alias TftServer.Meta.{Composition, CompositionChampion, CompositionTrait, MetaOverview}
+  alias TftServer.Meta.{Composition, CompositionChampion, CompositionTrait, MetaOverview, Version}
   alias TftServer.Repo
   alias TftServer.SeedData.Board, as: BoardData
   alias TftServer.SeedData.Champions, as: ChampionsData
@@ -20,6 +20,9 @@ defmodule TftServer.Seeds do
     Repo.delete_all(Composition)
     Repo.delete_all(MetaOverview)
     Repo.delete_all(BoardBootstrap)
+    Repo.delete_all(Version)
+
+    insert_default_version()
 
     Enum.each(ChampionsData.rows(), fn row ->
       {:ok, _} = Champions.create_champion(row)
@@ -85,6 +88,17 @@ defmodule TftServer.Seeds do
       region: "NORTH AMERICA",
       updated_display: "2H AGO",
       patch_label: "Live Patch Analysis"
+    })
+    |> Repo.insert!()
+  end
+
+  defp insert_default_version do
+    %Version{}
+    |> Version.changeset(%{
+      id: "default",
+      label: "Default Set",
+      is_active: true,
+      notes: "Bản dữ liệu mặc định"
     })
     |> Repo.insert!()
   end
