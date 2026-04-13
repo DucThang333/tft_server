@@ -7,7 +7,11 @@ defmodule TftServer.Champions.Champion do
   schema "champions" do
     field :name, :string
     field :cost, :integer
-    field :role_type, :string
+
+    belongs_to :role_type_row, TftServer.Champions.RoleType,
+      foreign_key: :role_type,
+      references: :id,
+      type: :string
     field :content_version, :integer, default: 1
     field :skill_name, :string
     field :skill_description_template, :string
@@ -20,7 +24,8 @@ defmodule TftServer.Champions.Champion do
 
     has_many :champion_traits, TftServer.Champions.ChampionTrait, foreign_key: :champion_id
     has_many :star_stats, TftServer.Champions.ChampionStarStat, foreign_key: :champion_id
-    has_many :skill_params, TftServer.Champions.ChampionSkillParam, foreign_key: :champion_id
+
+    has_many :champion_skills, TftServer.Champions.ChampionSkill, foreign_key: :champion_id
 
     timestamps()
   end
@@ -64,6 +69,7 @@ defmodule TftServer.Champions.Champion do
     |> validate_augment_state_shape()
     |> validate_encounters_shape()
     |> unique_constraint(:id)
+    |> foreign_key_constraint(:role_type)
   end
 
   def update_changeset(champion \\ %__MODULE__{}, attrs) do
@@ -77,6 +83,7 @@ defmodule TftServer.Champions.Champion do
     |> validate_if_changed_min_len(:skill_description_template, 1)
     |> validate_augment_state_shape()
     |> validate_encounters_shape()
+    |> foreign_key_constraint(:role_type)
   end
 
   defp validate_if_changed_min_len(changeset, field, min_len) do

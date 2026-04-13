@@ -14,3 +14,15 @@ objc[61153]: +[NSPlaceholderMutableString initialize] may have been in progress 
 objc[61153]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called. We cannot safely call it or ignore it in the fork() child process. Crashing instead. Set a breakpoint on objc_initializeAfterForkError to debug.
 objc[51972]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called.
 objc[51972]: +[NSPlaceholderMutableString initialize] may have been in progress in another thread when fork() was called. We cannot safely call it or ignore it in the fork() child process. Crashing instead. Set a breakpoint on objc_initializeAfterForkError to debug.
+          ok  Starting native_osx for sync tft_server_app_sync
+          ok  tft_server_app_sync container still running, restarting unison in container
+unison: stopped
+unison: started
+     success  Sync container started
+     success  Showing unison logs from your sync container: tft_server_app_sync
+          ok  Starting native_osx for sync tft_server_app_sync
+          ok  tft_server_app_sync container still running, restarting unison in container
+unison: stopped
+unison: started
+     success  Sync container started
+     success  Showing unison logs from your sync container: tft_server_app_sync

@@ -1,20 +1,17 @@
-defmodule TftServerWeb.Api.V1.Admin.TraitController do
+defmodule TftServerWeb.Api.V1.Admin.RoleTypeController do
   use TftServerWeb, :controller
 
   alias TftServer.Champions
   alias TftServerWeb.Api.V1.Json
 
   def create(conn, params) do
-    attrs =
-      params
-      |> extract_trait_payload()
-      |> merge_version_from_params(params)
+    attrs = extract_payload(params)
 
-    case Champions.create_trait_def(attrs) do
-      {:ok, trait} ->
+    case Champions.create_role_type(attrs) do
+      {:ok, row} ->
         conn
         |> put_status(:created)
-        |> json(%{"trait" => Json.game_trait_def(trait)})
+        |> json(%{"roleType" => Json.game_role_type(row)})
 
       {:error, %Ecto.Changeset{} = cs} ->
         conn
@@ -24,18 +21,18 @@ defmodule TftServerWeb.Api.V1.Admin.TraitController do
   end
 
   def update(conn, %{"id" => id} = params) do
-    attrs = extract_trait_payload(params)
+    attrs = extract_payload(params)
 
-    case Champions.get_trait_def(id) do
+    case Champions.get_role_type(id) do
       nil ->
         conn
         |> put_status(:not_found)
-        |> json(%{"errors" => %{"id" => ["không tìm thấy trait"]}})
+        |> json(%{"errors" => %{"id" => ["không tìm thấy vai trò"]}})
 
-      trait ->
-        case Champions.update_trait_def(trait, attrs) do
+      row ->
+        case Champions.update_role_type(row, attrs) do
           {:ok, updated} ->
-            json(conn, %{"trait" => Json.game_trait_def(updated)})
+            json(conn, %{"roleType" => Json.game_role_type(updated)})
 
           {:error, %Ecto.Changeset{} = cs} ->
             conn
@@ -46,16 +43,25 @@ defmodule TftServerWeb.Api.V1.Admin.TraitController do
   end
 
   def delete(conn, %{"id" => id}) do
-    case Champions.get_trait_def(id) do
+    case Champions.get_role_type(id) do
       nil ->
         conn
         |> put_status(:not_found)
-        |> json(%{"errors" => %{"id" => ["không tìm thấy trait"]}})
+        |> json(%{"errors" => %{"id" => ["không tìm thấy vai trò"]}})
 
-      trait ->
-        case Champions.delete_trait_def(trait) do
+      row ->
+        case Champions.delete_role_type(row) do
           {:ok, _} ->
             send_resp(conn, :no_content, "")
+
+          {:error, :in_use} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> json(%{
+              "errors" => %{
+                "base" => ["đang được dùng bởi tướng — đổi vai trò tướng trước"]
+              }
+            })
 
           {:error, %Ecto.Changeset{} = cs} ->
             conn
@@ -65,23 +71,10 @@ defmodule TftServerWeb.Api.V1.Admin.TraitController do
     end
   end
 
-  defp extract_trait_payload(params) when is_map(params) do
+  defp extract_payload(params) when is_map(params) do
     case params do
-      %{"trait" => body} when is_map(body) -> body
+      %{"roleType" => body} when is_map(body) -> body
       other -> other
-    end
-  end
-
-  defp merge_version_from_params(body, params)
-       when is_map(body) and is_map(params) do
-    if Map.has_key?(body, "versionId") or Map.has_key?(body, "version_id") do
-      body
-    else
-      cond do
-        Map.has_key?(params, "versionId") -> Map.put(body, "versionId", params["versionId"])
-        Map.has_key?(params, "version_id") -> Map.put(body, "version_id", params["version_id"])
-        true -> body
-      end
     end
   end
 

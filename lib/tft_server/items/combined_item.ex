@@ -14,6 +14,7 @@ defmodule TftServer.Items.CombinedItem do
     field :image_url, :string
     field :stats, {:array, :map}
     field :version_id, :string, default: "default"
+    field :description_params, {:array, :map}, default: []
 
     timestamps()
   end
@@ -28,7 +29,8 @@ defmodule TftServer.Items.CombinedItem do
     :tags,
     :image_url,
     :stats,
-    :version_id
+    :version_id,
+    :description_params
   ]
 
   def changeset(combined_item \\ %__MODULE__{}, attrs) do
@@ -45,5 +47,9 @@ defmodule TftServer.Items.CombinedItem do
       :stats,
       :version_id
     ])
+    |> validate_change(:components, fn :components, comps ->
+      if is_list(comps) and length(comps) == 2, do: [], else: [components: "cần đúng 2 mã thành phần"]
+    end)
+    |> foreign_key_constraint(:version_id, name: "combined_items_version_id_fkey")
   end
 end

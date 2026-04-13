@@ -3,9 +3,9 @@ defmodule TftServer.Seeds do
 
   alias TftServer.Board.BoardBootstrap
   alias TftServer.Champions
-  alias TftServer.Champions.{Champion, Trait}
+  alias TftServer.Champions.{Champion, RoleType, Trait}
   alias TftServer.Items.{BaseItem, CombinedItem}
-  alias TftServer.Meta.{Composition, CompositionChampion, CompositionTrait, MetaOverview, Version}
+  alias TftServer.Meta.{Composition, CompositionChampion, CompositionTrait, GameAugment, GameEncounter, MetaOverview, Version}
   alias TftServer.Repo
   alias TftServer.SeedData.Board, as: BoardData
   alias TftServer.SeedData.Champions, as: ChampionsData
@@ -14,15 +14,20 @@ defmodule TftServer.Seeds do
 
   def run do
     Repo.delete_all(Champion)
+    Repo.delete_all(RoleType)
     Repo.delete_all(Trait)
     Repo.delete_all(BaseItem)
     Repo.delete_all(CombinedItem)
+    Repo.delete_all(GameEncounter)
+    Repo.delete_all(GameAugment)
     Repo.delete_all(Composition)
     Repo.delete_all(MetaOverview)
     Repo.delete_all(BoardBootstrap)
     Repo.delete_all(Version)
 
     insert_default_version()
+    insert_seed_role_types()
+    insert_seed_trait_defs()
 
     Enum.each(ChampionsData.rows(), fn row ->
       {:ok, _} = Champions.create_champion(row)
@@ -90,6 +95,50 @@ defmodule TftServer.Seeds do
       patch_label: "Live Patch Analysis"
     })
     |> Repo.insert!()
+  end
+
+  # Tộc (origin) trong seed tướng — còn lại coi là hệ (class).
+  @seed_origin_names MapSet.new([
+    "Ionia",
+    "Noxus",
+    "Piltover",
+    "Demacia",
+    "Shadow Isles",
+    "Ác Nữ"
+  ])
+
+  defp insert_seed_role_types do
+    rows = [
+      %{id: "fighter_ad", name: "Đấu Sĩ Vật Lý", color: "#C8AA6E", description: ""},
+      %{id: "fighter_ap", name: "Đấu Sĩ Phép", color: "#7EC8E3", description: ""},
+      %{id: "marksman", name: "Xạ Thủ Vật Lý", color: "#E6A04D", description: ""},
+      %{id: "mage", name: "Thuật Sư Phép", color: "#9B59B6", description: ""},
+      %{id: "role_unknown", name: "Chưa xác định", color: "#64748b", description: ""}
+    ]
+
+    Enum.each(rows, fn attrs ->
+      %RoleType{}
+      |> RoleType.changeset(attrs)
+      |> Repo.insert!()
+    end)
+  end
+
+  defp insert_seed_trait_defs do
+    names =
+      ChampionsData.rows()
+      |> Enum.flat_map(&Map.get(&1, "traits", []))
+      |> Enum.uniq()
+
+    Enum.each(names, fn name ->
+      kind = if MapSet.member?(@seed_origin_names, name), do: "origin", else: "class"
+
+      {:ok, _} =
+        Champions.create_trait_def(%{
+          "name" => name,
+          "kind" => kind,
+          "version_id" => "default"
+        })
+    end)
   end
 
   defp insert_default_version do

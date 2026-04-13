@@ -1,20 +1,20 @@
-defmodule TftServerWeb.Api.V1.Admin.TraitController do
+defmodule TftServerWeb.Api.V1.Admin.MetaAugmentController do
   use TftServerWeb, :controller
 
-  alias TftServer.Champions
+  alias TftServer.Meta
   alias TftServerWeb.Api.V1.Json
 
   def create(conn, params) do
     attrs =
       params
-      |> extract_trait_payload()
+      |> extract_payload()
       |> merge_version_from_params(params)
 
-    case Champions.create_trait_def(attrs) do
-      {:ok, trait} ->
+    case Meta.create_game_augment(attrs) do
+      {:ok, row} ->
         conn
         |> put_status(:created)
-        |> json(%{"trait" => Json.game_trait_def(trait)})
+        |> json(%{"augment" => Json.game_augment(row)})
 
       {:error, %Ecto.Changeset{} = cs} ->
         conn
@@ -24,18 +24,18 @@ defmodule TftServerWeb.Api.V1.Admin.TraitController do
   end
 
   def update(conn, %{"id" => id} = params) do
-    attrs = extract_trait_payload(params)
+    attrs = extract_payload(params)
 
-    case Champions.get_trait_def(id) do
+    case Meta.get_game_augment(id) do
       nil ->
         conn
         |> put_status(:not_found)
-        |> json(%{"errors" => %{"id" => ["không tìm thấy trait"]}})
+        |> json(%{"errors" => %{"id" => ["không tìm thấy augment"]}})
 
-      trait ->
-        case Champions.update_trait_def(trait, attrs) do
+      row ->
+        case Meta.update_game_augment(row, attrs) do
           {:ok, updated} ->
-            json(conn, %{"trait" => Json.game_trait_def(updated)})
+            json(conn, %{"augment" => Json.game_augment(updated)})
 
           {:error, %Ecto.Changeset{} = cs} ->
             conn
@@ -45,29 +45,9 @@ defmodule TftServerWeb.Api.V1.Admin.TraitController do
     end
   end
 
-  def delete(conn, %{"id" => id}) do
-    case Champions.get_trait_def(id) do
-      nil ->
-        conn
-        |> put_status(:not_found)
-        |> json(%{"errors" => %{"id" => ["không tìm thấy trait"]}})
-
-      trait ->
-        case Champions.delete_trait_def(trait) do
-          {:ok, _} ->
-            send_resp(conn, :no_content, "")
-
-          {:error, %Ecto.Changeset{} = cs} ->
-            conn
-            |> put_status(:unprocessable_entity)
-            |> json(%{"errors" => format_errors(cs)})
-        end
-    end
-  end
-
-  defp extract_trait_payload(params) when is_map(params) do
+  defp extract_payload(params) when is_map(params) do
     case params do
-      %{"trait" => body} when is_map(body) -> body
+      %{"augment" => body} when is_map(body) -> body
       other -> other
     end
   end

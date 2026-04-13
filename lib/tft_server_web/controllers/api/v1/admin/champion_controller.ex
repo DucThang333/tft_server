@@ -67,7 +67,7 @@ defmodule TftServerWeb.Api.V1.Admin.ChampionController do
   end
 
   defp normalize_attrs(body) when is_map(body) do
-    %{
+    base = %{
       "id" => body["id"],
       "name" => body["name"],
       "cost" => body["cost"],
@@ -83,6 +83,8 @@ defmodule TftServerWeb.Api.V1.Admin.ChampionController do
       "augment_state" => normalize_augment_state(body["augmentState"] || body["augment_state"]),
       "encounters" => normalize_encounters_list(body["encounters"])
     }
+
+    if Map.has_key?(body, "skills"), do: Map.put(base, "skills", body["skills"]), else: base
   end
 
   defp normalize_augment_state(nil), do: %{"linked" => [], "notes" => nil}
@@ -112,6 +114,7 @@ defmodule TftServerWeb.Api.V1.Admin.ChampionController do
     |> put_if_key(body, "traits", "traits")
     |> put_if_star_stats(body)
     |> put_if_skill_params(body)
+    |> put_if_skills(body)
     |> put_if_image_url(body)
     |> put_if_version_id(body)
     |> put_if_augment_state(body)
@@ -161,6 +164,10 @@ defmodule TftServerWeb.Api.V1.Admin.ChampionController do
       Map.has_key?(body, "skill_params") -> Map.put(acc, "skill_params", body["skill_params"])
       true -> acc
     end
+  end
+
+  defp put_if_skills(acc, body) do
+    if Map.has_key?(body, "skills"), do: Map.put(acc, "skills", body["skills"]), else: acc
   end
 
   defp put_if_key(acc, body, json_key, attr_key) do
